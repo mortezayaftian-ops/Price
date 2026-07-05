@@ -5,18 +5,19 @@ from telegram import Bot
 TOKEN = os.environ.get("TOKEN")
 CHANNEL_ID = -1004297055826
 
-# مهم: timeout بیشتر
-bot = Bot(TOKEN, request_kwargs={"read_timeout": 20})
+bot = Bot(TOKEN)
 
 def extract_price(text):
+    if not text:
+        return None
     match = re.search(r'(\d{2,3}(?:,\d{3})+)', text)
     return match.group(1) if match else None
 
 def main():
     try:
-        updates = bot.get_updates(limit=20, timeout=10)
+        updates = bot.get_updates(limit=10, timeout=20)
     except Exception as e:
-        print("Telegram error:", e)
+        print("Error:", e)
         return
 
     last = None
@@ -28,7 +29,6 @@ def main():
     if not last:
         return
 
-    kind = None
     if "نقدی" in last:
         kind = "نقدی"
     elif "فردایی" in last:
