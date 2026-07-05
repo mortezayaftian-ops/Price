@@ -5,14 +5,19 @@ from telegram import Bot
 TOKEN = os.environ.get("TOKEN")
 CHANNEL_ID = -1004297055826
 
-bot = Bot(TOKEN)
+# مهم: timeout بیشتر
+bot = Bot(TOKEN, request_kwargs={"read_timeout": 20})
 
 def extract_price(text):
     match = re.search(r'(\d{2,3}(?:,\d{3})+)', text)
     return match.group(1) if match else None
 
 def main():
-    updates = bot.get_updates(limit=30)
+    try:
+        updates = bot.get_updates(limit=20, timeout=10)
+    except Exception as e:
+        print("Telegram error:", e)
+        return
 
     last = None
     for u in reversed(updates):
@@ -36,14 +41,15 @@ def main():
     if not price:
         return
 
-    text = f"""💵 دلار تهران
+    bot.send_message(
+        chat_id=CHANNEL_ID,
+        text=f"""💵 دلار تهران
 
 💰 نوع: {kind}
 💲 قیمت: {price}
 
 #DOLLAR"""
-
-    bot.send_message(chat_id=CHANNEL_ID, text=text)
+    )
 
 if __name__ == "__main__":
     main()
